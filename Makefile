@@ -1,6 +1,7 @@
 KVERSION ?= `uname -r`
 KERNEL_SRC ?= /lib/modules/${KVERSION}/build
-MODULEDIR ?= /lib/modules/${KVERSION}/kernel/drivers/hid
+MODULES_DIR ?= /lib/modules/${KVERSION}/kernel/drivers/hid
+UDEVRULES_DIR ?= /etc/udev/rules.d
 
 default:
 	@echo -e "\n::\033[32m Compiling Fanatec kernel module\033[0m"
@@ -15,13 +16,14 @@ clean:
 install:
 	@echo -e "\n::\033[34m Installing Fanatec kernel module/udev rule\033[0m"
 	@echo "====================================================="
-	@cp -v hid-fanatec.ko ${MODULEDIR}
-	@cp -v fanatec.rules /etc/udev/rules.d/99-fanatec.rules
-	depmod
+	@install -p -v -m 0755 -D hid-fanatec.ko ${INSTALL_DIR}${MODULES_DIR}
+	@install -p -v -m 0755 -D fanatec.rules ${INSTALL_DIR}${UDEVRULES_DIR}/99-fanatec.rules
+	@if [ `id -u` -eq 0 ]; then depmod; fi
 
 uninstall:
 	@echo -e "\n::\033[34m Uninstalling Fanatec kernel module/udev rule\033[0m"
 	@echo "====================================================="
-	@rm -fv ${MODULEDIR}/hid-fanatec.ko
-	@rm -fv /etc/udev/rules.d/99-fanatec.rules
-	depmod
+	@rm -fv ${INSTALL_DIR}${MODULES_DIR}/hid-fanatec.ko
+	@rm -fv ${INSTALL_DIR}${UDEVRULES_DIR}/99-fanatec.rules
+	@if [ `id -u` -eq 0 ]; then depmod; fi
+
